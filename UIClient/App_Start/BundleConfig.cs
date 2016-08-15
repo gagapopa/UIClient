@@ -15,7 +15,14 @@ namespace UIClient
                         "~/Scripts/jquery.validate*"));
 
             bundles.Add(new ScriptBundle("~/bundles/cookiejs").Include(
+                        "~/Scripts/spin.js",
                         "~/Scripts/js-cookie/js.cookie.js"));
+
+            bundles.Add(new ScriptBundle("~/bundles/lodash").Include(
+                        "~/Scripts/lodash.min.js"));
+
+            bundles.Add(new ScriptBundle("~/bundles/jqueryspin").Include(
+                        "~/Scripts/jqueryspin.js"));
 
             // Use the development version of Modernizr to develop with and learn from. Then, when you're
             // ready for production, use the build tool at http://modernizr.com to pick only the tests you need.
@@ -28,7 +35,7 @@ namespace UIClient
 
             bundles.Add(new ScriptBundle("~/bundles/knockout").Include(
                       "~/Scripts/knockout-{version}.js",
-                      "~/Scripts/knockout.viewmodel.{version}.min.js"));
+                      "~/Scripts/knockout.viewmodel.2.0.3.min.js"));
 
             bundles.Add(new StyleBundle("~/Content/css").Include(
                       "~/Content/bootstrap.css",
