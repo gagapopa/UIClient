@@ -17,14 +17,7 @@ namespace UIClient.Controllers
 
         public ActionResult About()
         {
-            ViewBag.Message = "Your application description page.";
-
-            return View();
-        }
-
-        public ActionResult Contact()
-        {
-            ViewBag.Message = "Your contact page.";
+            ViewBag.LinkBase = ConfigurationManager.AppSettings["RedirectUrl"];
 
             return View();
         }
