@@ -1,0 +1,47 @@
+﻿<table class="table">
+    <thead>
+        <tr>
+            <td>Full Url</td>
+            <td>Short Url</td>
+            <td>Creation date</td>
+            <td>Clicks</td>
+        </tr>
+    </thead>
+    <tbody data-bind="foreach: Link">
+            <tr>
+                <td><a data-bind="attr:{ href: FullUrl}, text: FullUrl"></a></td>
+                <td><a data-bind="attr:{href: LinkId}, text: LinkId"></a></td>
+                <td data-bind="text: formatDate"></td>
+                <td data-bind="text: ClicksNumber"></td>
+            </tr>
+    </tbody>
+</table>
+<script>
+
+    $( function () {
+        window.UserGuid = Cookies.get( 'UserGuid' );
+
+        if ( window.UserGuid ) {
+            $.ajax( {
+                url: '@Url.Action("GetUserLinks", "Data")',
+                method: 'GET',
+                contentType: 'application/json; charset=utf-8',
+                data: { userGuid: window.UserGuid }
+            } ).done( function ( userJson ) {
+                var user = JSON.parse( userJson );
+                if ( user.User && user.User.Link && !_.isArray( user.User.Link ) ) user.User.Link = [user.User.Link];
+                if ( user.User && user.User.Link ) {
+                    _.forEach( user.User.Link, function ( l ) { l.LinkId = '@ViewBag.LinkBase' + l.LinkId } );
+                }
+                var viewModel = ko.viewmodel.fromModel( user.User, {
+                    extend: {
+                        "{root}.Link[i]": function ( l ) {
+                            l.formatDate = new Date( l.CreationDate() ).toLocaleString();
+                        }
+                    }
+                } )
+                ko.applyBindings(viewModel);
+            } );
+        }
+    } );
+</script>

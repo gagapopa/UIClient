@@ -1,0 +1,94 @@
+﻿@{
+    ViewBag.Title = "Home Page";
+}
+<div id="home-screen">
+    <div class="jumbotron">
+        <form class="form-inline col-xs-offset-4">
+            <div class="form-group-lg">
+                <input type="url" name="FullUrl" value="" class="form-control" placeholder="Paste a link to shorten it" id="full-url-input" style="width: 100%" data-bind="value: newFullLink"/>
+                <button class="btn btn-primary" data-bind="click: clickShorten" id="shortenbtn">Shorten</button>
+            </div>
+            <span data-bind='visible: showError, text: newFullLink.validationMessage' style="color: red"> </span>
+        </form>
+    </div>
+    <div data-bind="with: userModel">
+        <div data-bind="foreach: Link">
+            <ul class="list-unstyled">
+                <li><strong>Full Url:</strong> <a data-bind="attr: {href: FullUrl},text: FullUrl"></a> </li>
+                <li><strong>Shorten:</strong> <a data-bind="attr: {href: LinkId},text: LinkId"></a> </li>
+            </ul>
+            <hr />
+        </div>
+    </div>
+</div>
+<script>
+        function Model ( ) {
+            var self = this;
+
+            self.userModel = ko.observable(),
+
+            self.newFullLink = ko.observable().extend( { required: null } ),
+
+            self.showError = ko.observable( false );
+
+            self.clickShorten = function (data, event) {
+                if ( !self.newFullLink()) {
+                    self.showError( true );
+                    return;
+                }
+                var userId = null;
+                var spinner = new Spinner().spin( event.target );
+                if ( self.userModel() ) {
+                    userId = self.userModel().UserId();
+                }
+
+                $.ajax( {
+                    url: '@Url.Action("InsertLinkOrCreateUser", "Data")',
+                    method: 'POST',
+                    contentType: 'application/json; charset=utf-8',
+                    data: JSON.stringify( {
+                        fullUrl: self.newFullLink(),
+                        userId: userId
+                    } )
+                } ).done( function ( userJson ) {
+                    var user = JSON.parse( userJson );
+                    if ( user.User && user.User.Link && !_.isArray( user.User.Link ) ) user.User.Link = [user.User.Link];
+                    if ( user.User && user.User.Link ) {
+                        _.forEach( user.User.Link, function ( l ) { l.LinkId = '@ViewBag.LinkBase' + l.LinkId } );
+                    }
+                    var userViewModel = ko.viewmodel.fromModel( user.User);
+                    self.userModel(userViewModel);
+                    if ( !window.UserGuid ) {
+                        Cookies.set( 'UserGuid', user.User.Identifier );
+                        window.UserGuid = user.User.Identifier;
+                    }
+                    spinner.stop()
+                } );
+            }
+        };
+
+    $( function () {
+        window.UserGuid = Cookies.get( 'UserGuid' );
+        var viewModel = new Model();
+        ko.applyBindings(viewModel);
+
+        if ( window.UserGuid ) {
+            $.ajax( {
+                url: '@Url.Action("GetUserLinks", "Data")',
+                method: 'GET',
+                contentType: 'application/json; charset=utf-8',
+                data: { userGuid: window.UserGuid }
+            } ).done( function ( userJson ) {
+                var user = JSON.parse( userJson );
+                if ( user.User && user.User.Link && !_.isArray( user.User.Link ) ) user.User.Link = [user.User.Link];
+                if ( user.User && user.User.Link ) {
+                    _.forEach( user.User.Link, function ( l ) { l.LinkId = '@ViewBag.LinkBase' + l.LinkId } );
+                }
+                var userViewModel = ko.viewmodel.fromModel( user.User)
+                viewModel.userModel(userViewModel);
+            } );
+        }
+    } );
+
+
+</script>
