@@ -11,7 +11,7 @@
             <tr>
                 <td><a data-bind="attr:{ href: FullUrl}, text: FullUrl"></a></td>
                 <td><a data-bind="attr:{href: LinkId}, text: LinkId"></a></td>
-                <td ></td>
+                <td data-bind="text: formatDate"></td>
                 <td data-bind="text: ClicksNumber"></td>
             </tr>
     </tbody>
@@ -33,7 +33,13 @@
                 if ( user.User && user.User.Link ) {
                     _.forEach( user.User.Link, function ( l ) { l.LinkId = '@ViewBag.LinkBase' + l.LinkId } );
                 }
-                var viewModel = ko.viewmodel.fromModel( user.User)
+                var viewModel = ko.viewmodel.fromModel( user.User, {
+                    extend: {
+                        "{root}.Link[i]": function ( l ) {
+                            l.formatDate = new Date( l.CreationDate() ).toLocaleString();
+                        }
+                    }
+                } )
                 ko.applyBindings(viewModel);
             } );
         }

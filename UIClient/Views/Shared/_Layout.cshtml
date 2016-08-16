@@ -11,6 +11,7 @@
     @Scripts.Render("~/bundles/cookiejs")
     @Scripts.Render("~/bundles/jquery")
     @Scripts.Render("~/bundles/jqueryspin")
+    @Scripts.Render("~/bundles/jqueryval")
 </head>
 <body>
     <div class="navbar navbar-inverse navbar-fixed-top">
@@ -21,7 +22,7 @@
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                 </button>
-                @Html.ActionLink("Application name", "Index", "Home", new { area = "" }, new { @class = "navbar-brand" })
+                @Html.ActionLink("The best app", "Index", "Home", new { area = "" }, new { @class = "navbar-brand" })
             </div>
             <div class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">
@@ -37,5 +38,22 @@
 
     @Scripts.Render("~/bundles/bootstrap")
     @RenderSection("scripts", required: false)
+    <script>
+        ko.extenders.required = function ( target, overrideMessage ) {
+            target.hasError = ko.observable();
+            target.validationMessage = ko.observable();
+
+            function validate( newValue ) {
+                target.hasError( newValue ? false : true );
+                target.validationMessage( newValue ? "" : overrideMessage || "This field is required" );
+            }
+
+            validate( target() );
+
+            target.subscribe( validate );
+
+            return target;
+        };
+    </script>
 </body>
 </html>

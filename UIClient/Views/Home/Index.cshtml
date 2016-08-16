@@ -8,13 +8,14 @@
                 <input type="url" name="FullUrl" value="" class="form-control" placeholder="Paste a link to shorten it" id="full-url-input" style="width: 100%" data-bind="value: newFullLink"/>
                 <button class="btn btn-primary" data-bind="click: clickShorten" id="shortenbtn">Shorten</button>
             </div>
+            <span data-bind='visible: showError, text: newFullLink.validationMessage' style="color: red"> </span>
         </form>
     </div>
     <div data-bind="with: userModel">
         <div data-bind="foreach: Link">
-            <ul class="list-inline">
-                <li> <a data-bind="attr: {href: FullUrl},text: FullUrl"></a> </li>
-                <li> <a data-bind="attr: {href: LinkId},text: LinkId"></a> </li>
+            <ul class="list-unstyled">
+                <li><strong>Full Url:</strong> <a data-bind="attr: {href: FullUrl},text: FullUrl"></a> </li>
+                <li><strong>Shorten:</strong> <a data-bind="attr: {href: LinkId},text: LinkId"></a> </li>
             </ul>
             <hr />
         </div>
@@ -26,9 +27,15 @@
 
             self.userModel = ko.observable(),
 
-            self.newFullLink = ko.observable(),
+            self.newFullLink = ko.observable().extend( { required: null } ),
+
+            self.showError = ko.observable( false );
 
             self.clickShorten = function (data, event) {
+                if ( !self.newFullLink()) {
+                    self.showError( true );
+                    return;
+                }
                 var userId = null;
                 var spinner = new Spinner().spin( event.target );
                 if ( self.userModel() ) {
@@ -49,15 +56,14 @@
                     if ( user.User && user.User.Link ) {
                         _.forEach( user.User.Link, function ( l ) { l.LinkId = '@ViewBag.LinkBase' + l.LinkId } );
                     }
-                    var userModel = ko.viewmodel.fromModel( user.User);
-                    self.userModel(userModel);
+                    var userViewModel = ko.viewmodel.fromModel( user.User);
+                    self.userModel(userViewModel);
                     if ( !window.UserGuid ) {
                         Cookies.set( 'UserGuid', user.User.Identifier );
                         window.UserGuid = user.User.Identifier;
                     }
                     spinner.stop()
                 } );
-
             }
         };
 
@@ -78,8 +84,8 @@
                 if ( user.User && user.User.Link ) {
                     _.forEach( user.User.Link, function ( l ) { l.LinkId = '@ViewBag.LinkBase' + l.LinkId } );
                 }
-                var userModel = ko.viewmodel.fromModel( user.User)
-                viewModel.userModel(userModel);
+                var userViewModel = ko.viewmodel.fromModel( user.User)
+                viewModel.userModel(userViewModel);
             } );
         }
     } );
